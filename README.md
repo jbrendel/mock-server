@@ -1,7 +1,7 @@
 # Mock-server
 
 A flexible, easily configured server, suitable to use as a stand in for any
-HTTP server during test runs.
+HTTP server - or multiple servers - during test runs.
 
 ## Introduction
 
@@ -17,10 +17,12 @@ some test data. However, this in itself can also be a challenge, depending on
 the server you need to run.
 
 To make this as easy as possible - at least for HTTP based servers - I wrote
-mock-server.py. This little utility can be a stand-in for an actual HTTP server
-during tests. It is easily configured via a single JSON file, can spin up
-multiple server threads (listening on different ports) and can reply with
-specified status, headers and body, based on a client request.
+mock-server.py. This little utility can be a stand-in for a actual HTTP
+server(s) during tests. It is easily configured via a single JSON file, can
+spin up multiple server threads (listening on different ports) and can reply
+with specified status, headers and body, based on a client request.
+
+Ideal for service testing in a micro-services architecture, for example.
 
 ## How to use
 
