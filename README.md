@@ -40,7 +40,9 @@ Request" will be returned.
 
 Usage:
 
+```
    ./mock-server.py server-config.json
+```
 
 ## The server-config file
 
@@ -103,9 +105,6 @@ Here is an example:
                     },
                     "response" : {
                         "status" : 200,
-                        "headers" : [
-                            "Server: Blahblah"
-                        ],
                         "body" : [
                             "Hallo!"
                         ]
@@ -132,7 +131,8 @@ Here is an example:
                     "response" : {
                         "status" : 201,
                         "headers" : [
-                            "Server: Blahblah"
+                            "Server: Blahblah",
+                            "X-some-header-I-made-up: Hi!"
                         ]
                     }
                 }

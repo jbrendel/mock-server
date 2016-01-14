@@ -296,7 +296,6 @@ class MockServer(threading.Thread):
                 # We processed the last request!
                 log("'%s': All requests processed." % self.name)
                 self.close()
-                return 200, None, None
         return resp['status'], hdrs, [ body ]
 
 

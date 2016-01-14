@@ -16,7 +16,6 @@
                         "status" : 200,
                         "headers" : [
                             "Date: Sat, 28 Nov 2099 00:45:59 GMT",
-                            "Server: Mock-server",
                             "Connection: close",
                             "Etag: \"pub555111222;\"",
                             "Cache-Control: max-age=3600, public",
@@ -53,9 +52,6 @@
                     },
                     "response" : {
                         "status" : 200,
-                        "headers" : [
-                            "Server: Blahblah"
-                        ],
                         "body" : [
                             "Hallo!"
                         ]
@@ -68,7 +64,7 @@
                     "response" : {
                         "status" : 200,
                         "headers" : [
-                            "Server: Blahblah"
+                            "Foobar: Blahblah"
                         ],
                         "body" : [
                             "Zweite Antwort!"
@@ -82,7 +78,8 @@
                     "response" : {
                         "status" : 201,
                         "headers" : [
-                            "Server: Blahblah"
+                            "Foobar: Blahblah",
+                            "X-some-header-I-made-up: Hi!"
                         ]
                     }
                 }
