@@ -1,0 +1,93 @@
+{
+    "logfile" : "/var/tmp/mock-server.log",
+    "servers" : [
+        {
+            "name"              : "Foobar",
+            "address"           : "0.0.0.0",
+            "port"              : 12345,
+            "schema"            : "http",
+            "requests_in_order" : true,
+            "requests" : [
+                {
+                    "request" : {
+                        "req" : "GET /foo/bar?blah=123"
+                    },
+                    "response" : {
+                        "status" : 200,
+                        "headers" : [
+                            "Date: Sat, 28 Nov 2099 00:45:59 GMT",
+                            "Server: Mock-server",
+                            "Connection: close",
+                            "Etag: \"pub555111222;\"",
+                            "Cache-Control: max-age=3600, public",
+                            "Content-Type: text/html; charset=UTF-8",
+                            "Vary: Accept-Encoding, Cookie, User-Agent"
+                        ],
+                        "body" : [
+                            "Hello!"
+                        ]
+                    }
+                },
+                {
+                    "request" : {
+                        "req" : "GET /foo/bar?blah=456"
+                    },
+                    "response" : {
+                        "status" : 200,
+                        "body" : [
+                            "Hello there, a second time!"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name"              : "Blahblah",
+            "port"              : 54321,
+            "schema"            : "http",
+            "requests_in_order" : true,
+            "requests" : [
+                {
+                    "request" : {
+                        "req" : "GET /bla/baz"
+                    },
+                    "response" : {
+                        "status" : 200,
+                        "headers" : [
+                            "Server: Blahblah"
+                        ],
+                        "body" : [
+                            "Hallo!"
+                        ]
+                    }
+                },
+                {
+                    "request" : {
+                        "req" : "GET /bla/baz"
+                    },
+                    "response" : {
+                        "status" : 200,
+                        "headers" : [
+                            "Server: Blahblah"
+                        ],
+                        "body" : [
+                            "Zweite Antwort!"
+                        ]
+                    }
+                },
+                {
+                    "request" : {
+                        "req" : "POST /bla/baz"
+                    },
+                    "response" : {
+                        "status" : 201,
+                        "headers" : [
+                            "Server: Blahblah"
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
+
