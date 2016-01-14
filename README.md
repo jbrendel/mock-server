@@ -47,7 +47,7 @@ Usage:
 The behaviour of the mocked servers is defined in the server-config JSON file.
 Here is an example:
 
-
+```json
 {
     "logfile" : "/var/tmp/mock-server.log",
     "servers" : [
@@ -140,6 +140,7 @@ Here is an example:
         }
     ]
 }
+```
 
 After specifying the log file location, this file defines two servers
 ("Foobar", listening on port 12345 and "Blahblah", listening on port 54321).
