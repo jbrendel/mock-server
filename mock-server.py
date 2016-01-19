@@ -101,6 +101,8 @@ class Logger(threading.Thread):
 
 class MyHandler(BaseHTTPRequestHandler):
 
+    protocol_version = 'HTTP/1.1'
+
     def _process_request(self):
         """
         All the processing takes place in the server object. We need to package
@@ -110,14 +112,29 @@ class MyHandler(BaseHTTPRequestHandler):
         All requests, independent of method, are handled in the same way here.
 
         """
+        self.protocol_version = "HTTP/1.1"
         code, headers, body = self.server_obj.req_handler(
             self.command, self.path, self.request_version, self.headers,
             self.rfile)
+        # The server name is not set as a normal header, it is set by the
+        # standard BaseHTTPRequestHandler class via special variables.
+        # Therefore, some special handling of the 'server' header (if defined)
+        # is needed.
+        server_name = "mock-server"
+        if headers:
+            for hdr_name, hdr_value in headers:
+                if hdr_name.lower() == "server":
+                    server_name = hdr_value
+                    break
+
+        self.server_version = server_name
+        self.sys_version = ""
         self.send_response(code)
         # The headers need to be returned as a list of tuples
         if headers:
             for hdr_name, hdr_value in headers:
-                self.send_header(hdr_name, hdr_value)
+                if hdr_name.lower() != "server":
+                    self.send_header(hdr_name, hdr_value)
         self.end_headers()
         # The body needs to be returned either as a list of strings
         if body:

@@ -163,6 +163,7 @@ line should look like: GET /foo/bar/ HTTP/1.1
 ## TODO
 
 * Define request headers and body for checking.
+* Allow wildcards in request matching.
 * Option to specify files or executables for headers and request bodies.
 * Support SSL.
 
