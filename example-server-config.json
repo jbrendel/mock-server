@@ -7,6 +7,7 @@
             "port"              : 12345,
             "schema"            : "http",
             "requests_in_order" : true,
+            "req_config_url"    : "/collection/of/request/responses/here/",
             "requests" : [
                 {
                     "request" : {
@@ -18,12 +19,10 @@
                             "Server: Foobar 123",
                             "Date: Sat, 28 Nov 2099 00:45:59 GMT",
                             "Connection: close",
-                            "Etag: \"pub555111222;\"",
                             "Cache-Control: max-age=3600, public",
                             "Content-Type: text/html; charset=UTF-8",
                             "Vary: Accept-Encoding, Cookie, User-Agent",
                             "Content-length: 6"
-
                         ],
                         "body" : [
                             "Hello!"
@@ -86,6 +85,14 @@
                         ]
                     }
                 }
+            ]
+        },
+        {
+            "name"              : "No-requests-server",
+            "port"              : 5555,
+            "schema"            : "http",
+            "req_config_url"    : "/reqs/and/resps/",
+            "requests" : [
             ]
         }
     ]

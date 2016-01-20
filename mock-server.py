@@ -180,6 +180,12 @@ class MockServer(threading.Thread):
         self.full_addr = (self.address, self.port)
         self.requests  = config['requests']
         self.requests_in_order = config.get('requests_in_order', False)
+        self.req_config_url    = config.get('req_config_url')
+        if self.req_config_url and not self.req_config_url.endswith("/"):
+            log("'%s': *** Request config URL must end with '/'." % self.name)
+            log("'%s': *** Automatically added..." % self.name)
+            self.req_config_url += "/"
+
         self.server    = None
         self.is_closed = False
 
@@ -237,6 +243,98 @@ class MockServer(threading.Thread):
         log("*** Error: %s" % msg)
         return 400, None, [ msg, "\n" ]
 
+    def req_update_sanity_check(self, rbody):
+        """
+        Perform some sanity check on request/response update body.
+
+        """
+        try:
+            resp = json.loads(rbody)
+            dummy = resp['request']['req']
+            dummy = resp['response']['status']
+            return resp, ""
+        except Exception as e:
+            return None, str(e)
+
+    def update_requests(self, method, path, headers, req_body_file):
+        """
+        Modify the array of requests via an API.
+
+        """
+        # Extract any request ID that may be present at the end.
+        req_id = path[len(self.req_config_url):]
+
+        # Client wishes to read current requests
+        if method == 'GET':
+            if not req_id:
+                # Return current request list
+                log("'%s': Client requested list of req/resp definitions." %
+                    self.name)
+                resp = json.dumps(self.requests)
+            else:
+                try:
+                    log("'%s': Client requested req/resp definition '%s'." %
+                        (self.name, req_id))
+                    resp = json.dumps(self.requests[int(req_id)])
+                except Exception:
+                    return self.return_error(
+                        "'%s': Req/resp with id '%s' does not exist." %
+                        (self.name, req_id))
+            return 200, [ ("content-length",len(resp)) ], [ resp ]
+
+        # Client wishes to delete an entry
+        if method == "DELETE":
+            if not req_id:
+                return self.return_error(
+                    "'%s': Req/resp delete requires a req/res id." % self.name)
+            try:
+                del self.requests[int(req_id)]
+                log("'%s': Deleted req/resp [%s]." % (self.name, req_id))
+            except Exception:
+                return self.return_error("'%s': No req/resp with id '%s'." %
+                                         (self.name, req_id))
+            return 200, None, None
+
+        # Client wishes to create or update requests
+        if method in ['PUT','POST']:
+            cl = headers.getheader('content-length')
+            if cl is None:
+                l = 0
+            else:
+                l = int(cl)
+            rbody = req_body_file.read(l)
+            req_body, msg = self.req_update_sanity_check(rbody)
+            if not req_body:
+                return self.return_error(
+                    "'%s': Missing or malformed request body: %s" %
+                    (self.name, msg))
+
+            if method == 'PUT':
+                if not req_id:
+                    return self.return_error(
+                        "'%s': Req/resp update requires an ID." % self.name)
+                try:
+                    self.requests[int(req_id)] = req_body
+                    log("'%s': Updated req/resp [%s]." % (self.name, req_id))
+                except:
+                    return self.return_error(
+                        "'%s': No req/resp with id '%s'." %
+                        (self.name, req_id))
+                return 200, None, None
+
+            if method == 'POST':
+                if req_id:
+                    return self.return_error(
+                        "'%s': Req/resp creation does not accept "
+                        "an ID in the URL." % self.name)
+                self.requests.append(req_body)
+                location = "%s%s" % (self.req_config_url, len(self.requests)-1)
+                log("'%s': Created new req/resp at: %s." %
+                    (self.name, location))
+                return 201, [ ("location", location) ], None
+
+
+
     def req_handler(self, method, path, version, headers, req_body_file):
         """
         Check whether this request is acceptable, then produce the specified
@@ -249,6 +347,11 @@ class MockServer(threading.Thread):
         body:        list of strings
 
         """
+        if path.startswith(self.req_config_url):
+            # Looks like the client is trying to update our requests list with
+            # a new request/response definition
+            return self.update_requests(method, path, headers, req_body_file)
+
         req_str = "%s %s" % (method.upper().strip(), path.strip())
 
         # Check if the client requested to close this server. This is done by

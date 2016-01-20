@@ -18,9 +18,10 @@ the server you need to run.
 
 To make this as easy as possible - at least for HTTP based servers - I wrote
 mock-server.py. This little utility can be a stand-in for a actual HTTP
-server(s) during tests. It is easily configured via a single JSON file, can
-spin up multiple server threads (listening on different ports) and can reply
-with specified status, headers and body, based on a client request.
+server(s) during tests. It is easily configured via a single JSON file, or at
+runtime via REST requests. It can spin up multiple server threads (listening on
+different ports) and can reply with specified status, headers and body, based
+on a client request.
 
 Ideal for service testing in a micro-services architecture, for example.
 
@@ -39,6 +40,11 @@ below) then it will not automatically terminate. In that case, you can send a
 
 If your test case sends an unexpected request to mock-server, a "400 Bad
 Request" will be returned.
+
+An initial list of expected request/response pairs is specified via the JSON
+file. However, it is possible to instead define this list (or modify the list)
+via REST requests at run time. This enables more complex test cases where the
+test suite programmatically determines test requests.
 
 Usage:
 
@@ -139,13 +145,24 @@ Here is an example:
                     }
                 }
             ]
+        },
+        {
+            "name"              : "No-requests-server",
+            "port"              : 5555,
+            "schema"            : "http",
+            "req_config_url"    : "/reqs/and/resps/",
+            "requests" : [
+            ]
         }
+
     ]
 }
 ```
 
-After specifying the log file location, this file defines two servers
-("Foobar", listening on port 12345 and "Blahblah", listening on port 54321).
+After specifying the log file location, this file defines three servers
+("Foobar", listening on port 12345, "Blahblah", listening on port 54321 and
+"No-requests-server", listening on port 5555).
+
 For each server the 'schema' is defined. It has to be "http" for now.
 Furthermore, for one of the servers we have defined "requests_in_order", which
 defaults to False. If it is set then the subsequently defined requests are
@@ -160,11 +177,62 @@ the headers (if any) and the request body (if any), which should be returned.
 Please note: All client requests should be of type HTTP/1.1, so a sent request
 line should look like: GET /foo/bar/ HTTP/1.1
 
+## Programmatic addition of request/response pairs
+
+Note that for the "No-requests-server" we have not defined any requests at all.
+It is assumed that test cases will add request/response pairs programmatically
+at run time. Please note also that it is possible to add or modify already
+existing requests, whether they came from the initial JSON file or whether they
+were specified later on at run time via the API.
+
+For the "No-requests-server" we have defined the "req_config_url" property.
+The server will maintain a list of the defined req/resp pairs at that
+collection URL.
+
+You can see the list of current req/resp pairs via a GET request to that URL.
+You can update a single request with a PUT to that URL (with the appended list
+index of the entry you wish to change). So, in this example "/reqs/and/resps/0"
+is the URL of the first req/resp pair. You can also create a brand new req/resp
+entry via a POST to the URL. Finally, you can delete an existing req/resp pair
+with a DELETE. Note that after a DELETE the index of any subsequent entries is
+changed.
+
+To create or update a new request response pair, simply POST or PUT a JSON
+definition to the specified URL. The JSON definition is exactly what you would
+write into the JSON config file. So, for example, you could POST:
+
+```
+POST /reqs/and/resps/ HTTP/1.1
+Content-length: 159
+
+{
+    "request" : {
+        "req" : "GET /bla/baz"
+    },
+    "response" : {
+        "status" : 200,
+        "body" : [
+            "Hallo!"
+        ]
+    }
+}
+```
+
+As response you would receive:
+
+```
+HTTP/1.1 201 Created
+Server: mock-server 
+Date: Wed, 20 Jan 2016 02:51:38 GMT
+location: /reqs/and/resps/0
+```
+
 ## TODO
 
 * Define request headers and body for checking.
 * Allow wildcards in request matching.
 * Option to specify files or executables for headers and request bodies.
+* Option to specify imported Python code for request handling.
 * Support SSL.
 
 
